@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أيها القارئ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.8) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 0, 0, 0.6) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(139, 0, 0, 0.7) 0%, transparent 50%),
+                linear-gradient(135deg, #2c1810 0%, #1a0a0a 50%, #0d0404 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #ff6b6b;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, rgba(139, 0, 0, 0.3), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(139, 0, 0, 0.2), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(139, 0, 0, 0.4), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(139, 0, 0, 0.3), transparent);
+            background-repeat: repeat;
+            background-size: 150px 150px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow:
+                0 0 10px #8b0000,
+                2px 2px 4px rgba(0,0,0,0.8);
+            color: #8b0000;
+            font-weight: bold;
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #8b0000, #a00000, #8b0000);
+            height: 20px;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                inset 0 2px 4px rgba(0,0,0,0.5),
+                0 0 10px rgba(139, 0, 0, 0.5);
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .sentence-display {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #cc0000;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            min-height: 80px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            color: #fff;
+            text-shadow: 0 0 5px #ff0000;
+        }
+
+        .typing-input {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ff0000;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            color: #ff0000;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+            text-shadow: 0 0 5px #ff0000;
+            box-shadow:
+                0 0 20px rgba(255, 0, 0, 0.3),
+                inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .typing-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow:
+                3px 3px 6px rgba(0,0,0,1),
+                -1px -1px 2px rgba(0,0,0,1);
+            font-weight: bold;
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            background: linear-gradient(145deg, #000000, #1a1a1a);
+            border: 3px solid #ff0000;
+            border-radius: 15px;
+            padding: 15px 25px;
+            color: #ffffff;
+            font-size: 1.2em;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow:
+                3px 3px 6px rgba(0,0,0,1),
+                -1px -1px 2px rgba(0,0,0,1),
+                1px 1px 2px rgba(0,0,0,1);
+            font-family: 'Arial Black', Arial, sans-serif;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(145deg, #ff0000, #cc0000);
+            color: #000000;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        .click-mode {
+            display: block;
+        }
+
+        .type-mode {
+            display: none;
+        }
+
+        .letters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .letter {
+            background:
+                radial-gradient(circle at 30% 30%, #333, #111),
+                linear-gradient(145deg, #444, #222);
+            border: 2px solid #8b0000;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow:
+                0 4px 15px rgba(139, 0, 0, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.1);
+            position: relative;
+            text-shadow: 0 0 5px #ff0000;
+        }
+
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 10px;
+            width: 8px;
+            height: 15px;
+            background: #8b0000;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform: rotate(-15deg);
+            opacity: 0.8;
+        }
+
+        .letter::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            right: 15px;
+            width: 6px;
+            height: 12px;
+            background: #660000;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform: rotate(25deg);
+            opacity: 0.7;
+        }
+
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 15%;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #ff0000, transparent);
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .letter::after {
+            content: '';
+            position: absolute;
+            bottom: 20%;
+            right: 20%;
+            width: 6px;
+            height: 12px;
+            background: linear-gradient(180deg, #ff0000, transparent);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            opacity: 0.6;
+            transform: rotate(15deg);
+        }
+
+        .letter:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow:
+                0 8px 25px rgba(255, 0, 0, 0.8),
+                0 0 15px rgba(255, 0, 0, 0.9),
+                0 0 30px rgba(139, 0, 0, 0.6);
+            filter: brightness(1.3) drop-shadow(0 0 10px #8b0000);
+            text-shadow:
+                2px 2px 4px rgba(255,255,255,1),
+                -1px -1px 2px rgba(255,255,255,1);
+        }
+
+        .letter:hover::before {
+            background: #ff0000;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+        }
+
+        .letter:hover::after {
+            background: #cc0000;
+            box-shadow: 0 0 6px rgba(204, 0, 0, 0.8);
+        }
+
+        .letter:active {
+            animation: pulse 0.3s ease;
+        }
+
+        .letter.used {
+            background: linear-gradient(145deg, #2c1810, #1a0a0a);
+            cursor: not-allowed;
+            opacity: 0.3;
+            color: #444;
+            border-color: #222;
+        }
+
+        .letter.used::before,
+        .letter.used::after {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #000000, #1a1a1a);
+            border: 3px solid #ff0000;
+            border-radius: 25px;
+            padding: 15px 30px;
+            color: #ffffff;
+            font-size: 1.2em;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.6),
+                inset 0 2px 4px rgba(255, 0, 0, 0.2);
+            text-shadow:
+                3px 3px 6px rgba(0,0,0,1),
+                -1px -1px 2px rgba(0,0,0,1),
+                1px 1px 2px rgba(0,0,0,1);
+            font-family: 'Arial Black', Arial, sans-serif;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 6px 20px rgba(255, 0, 0, 0.4),
+                0 0 10px rgba(255, 0, 0, 0.5);
+            filter: brightness(1.2);
+            text-shadow:
+                3px 3px 6px rgba(0,0,0,1),
+                -1px -1px 2px rgba(0,0,0,1),
+                1px 1px 2px rgba(0,0,0,1);
+        }
+
+        .btn.space {
+            background: linear-gradient(145deg, #000000, #1a1a1a);
+            border-color: #333333;
+        }
+        .btn.delete {
+            background: linear-gradient(145deg, #000000, #1a1a1a);
+            border-color: #333333;
+        }
+        .btn.clear {
+            background: linear-gradient(145deg, #000000, #1a1a1a);
+            border-color: #333333;
+        }
+        .btn.check {
+            background: linear-gradient(145deg, #000000, #1a1a1a);
+            border-color: #333333;
+        }
+
+        .message {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .error {
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+        }
+
+        .success {
+            background: rgba(39, 174, 96, 0.8);
+            color: white;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f39c12;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8b0000;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #8b0000;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px #8b0000;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            text-shadow: 0 0 3px #ff0000;
+        }
+
+        .puzzle-text {
+            color: #fff;
+            font-size: 1.3em;
+            text-align: center;
+            margin-top: 15px;
+            text-shadow: 0 0 5px #ff0000;
+            font-weight: bold;
+            letter-spacing: 2px;
+            line-height: 1.5;
+        }
+
+
+
+        .success-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 50% 50%, rgba(139, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .success-content {
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        .success-title {
+            font-size: 3em;
+            color: #8b0000;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            margin-bottom: 30px;
+            font-weight: 900;
+            font-family: 'Arial Black', Arial, sans-serif;
+        }
+
+        .mirror-image {
+            width: 400px;
+            height: 500px;
+            border-radius: 15px;
+            box-shadow:
+                0 0 30px rgba(139, 0, 0, 0.8),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            margin: 20px auto;
+            background:
+                linear-gradient(135deg, rgba(0,0,0,0.9), rgba(20,20,20,0.8)),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="400" height="500" fill="%23000"/><rect x="50" y="50" width="300" height="400" fill="%23111" stroke="%23333" stroke-width="2"/><circle cx="150" cy="180" r="12" fill="%23ff0000" filter="url(%23glow)"/><circle cx="250" cy="180" r="12" fill="%23ff0000" filter="url(%23glow)"/><path d="M120 280 Q200 380 280 280" stroke="%23ff0000" stroke-width="4" fill="none" filter="url(%23glow)"/><path d="M140 300 L160 320 M240 320 L260 300" stroke="%23ff0000" stroke-width="2" filter="url(%23glow)"/><text x="200" y="470" text-anchor="middle" fill="%23ff0000" font-size="18" filter="url(%23glow)">أنت الآن جزء من اللعبة</text></svg>') center/cover;
+            border: 3px solid #8b0000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mirror-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(139, 0, 0, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(139, 0, 0, 0.2) 0%, transparent 50%);
+            animation: mirrorGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes mirrorGlow {
+            from { opacity: 0.3; }
+            to { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>أيها القارئ... عليك كتابة الجملة بطريقة صحيحة واكتبها في كتابك</h1>
+
+
+
+        <div class="instructions">
+            <h3>حل الأحجية أيها القارئ:</h3>
+            <p class="puzzle-text">
+                ( ً ا م ا ئ د ك ب ا ق ر ا ا ن ه ا ن ا ...... ا ن ه ا ن ا )
+            </p>
+        </div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="switchMode('click')">وضع النقر</button>
+            <button class="mode-btn" onclick="switchMode('type')">وضع الكتابة</button>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="sentence-display" id="sentenceDisplay">
+            ابدأ بالضغط على الحروف...
+        </div>
+
+        <!-- وضع الكتابة -->
+        <div class="type-mode" id="typeMode">
+            <input type="text" class="typing-input" id="typingInput" placeholder="اكتب الجملة هنا..." maxlength="50">
+        </div>
+
+        <!-- وضع النقر -->
+        <div class="click-mode" id="clickMode">
+            <div class="letters-container" id="lettersContainer">
+                <!-- الحروف ستُضاف هنا بواسطة JavaScript -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn space" onclick="addSpace()">مسافة</button>
+            <button class="btn delete" onclick="deleteLast()">حذف آخر حرف</button>
+            <button class="btn clear" onclick="clearAll()">مسح الكل</button>
+            <button class="btn check" onclick="checkSentence()">فحص الجملة</button>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- صفحة النجاح -->
+    <div class="success-page" id="successPage">
+        <div class="success-content">
+            <h1 class="success-title">تهانينا... لقد نجحنا في التحكم بعقلك</h1>
+            <div class="mirror-image"></div>
+            <p style="color: #8b0000; font-size: 1.5em; margin-top: 20px; text-shadow: 0 0 10px #8b0000; animation: bloodGlow 2s ease-in-out infinite alternate;">
+                🎉 أحسنت! لقد أكملت التحدي بنجاح! 🎉
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const correctSentence = "أنا هنا...أنا اراقبك";
+        const letters = "أنا هنا أنا اراقبك".split('').filter(char => char !== ' ');
+        // إضافة النقاط كحروف منفصلة
+        letters.push('.', '.', '.');
+        const shuffledLetters = [...letters].sort(() => Math.random() - 0.5);
+        
+        let currentSentence = "";
+        let usedLetters = [];
+        let currentMode = 'click';
+
+        function initGame() {
+            const container = document.getElementById('lettersContainer');
+            container.innerHTML = '';
+
+            shuffledLetters.forEach((letter, index) => {
+                const letterBtn = document.createElement('button');
+                letterBtn.className = 'letter';
+                letterBtn.textContent = letter;
+                letterBtn.onclick = () => addLetter(letter, index);
+                letterBtn.id = `letter-${index}`;
+                container.appendChild(letterBtn);
+            });
+
+            // إضافة مستمع للكتابة
+            const typingInput = document.getElementById('typingInput');
+            typingInput.addEventListener('input', function() {
+                if (currentMode === 'type') {
+                    currentSentence = this.value;
+                    updateDisplay();
+                    updateProgress();
+                }
+            });
+
+            updateDisplay();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const clickMode = document.getElementById('clickMode');
+            const typeMode = document.getElementById('typeMode');
+            const modeBtns = document.querySelectorAll('.mode-btn');
+
+            // إزالة الفئة النشطة من جميع الأزرار
+            modeBtns.forEach(btn => btn.classList.remove('active'));
+
+            if (mode === 'click') {
+                clickMode.style.display = 'block';
+                typeMode.style.display = 'none';
+                modeBtns[0].classList.add('active');
+            } else {
+                clickMode.style.display = 'none';
+                typeMode.style.display = 'block';
+                modeBtns[1].classList.add('active');
+                // نسخ النص الحالي إلى حقل الكتابة
+                document.getElementById('typingInput').value = currentSentence;
+            }
+        }
+
+        function addLetter(letter, index) {
+            if (usedLetters.includes(index)) return;
+            
+            currentSentence += letter;
+            usedLetters.push(index);
+            
+            const letterBtn = document.getElementById(`letter-${index}`);
+            letterBtn.classList.add('used');
+            
+            updateDisplay();
+            updateProgress();
+        }
+
+        function addSpace() {
+            if (currentSentence && !currentSentence.endsWith(' ')) {
+                currentSentence += ' ';
+                updateDisplay();
+            }
+        }
+
+        function deleteLast() {
+            if (currentSentence.length === 0) return;
+            
+            const lastChar = currentSentence[currentSentence.length - 1];
+            currentSentence = currentSentence.slice(0, -1);
+            
+            if (lastChar !== ' ') {
+                const letterIndex = shuffledLetters.findIndex((letter, index) => 
+                    letter === lastChar && usedLetters.includes(index)
+                );
+                
+                if (letterIndex !== -1) {
+                    usedLetters = usedLetters.filter(index => index !== letterIndex);
+                    const letterBtn = document.getElementById(`letter-${letterIndex}`);
+                    letterBtn.classList.remove('used');
+                }
+            }
+            
+            updateDisplay();
+            updateProgress();
+        }
+
+        function clearAll() {
+            currentSentence = "";
+            usedLetters = [];
+
+            document.querySelectorAll('.letter').forEach(btn => {
+                btn.classList.remove('used');
+            });
+
+            // مسح حقل الكتابة أيضاً
+            document.getElementById('typingInput').value = "";
+
+            updateDisplay();
+            updateProgress();
+            hideMessage();
+        }
+
+        function updateDisplay() {
+            const display = document.getElementById('sentenceDisplay');
+            display.textContent = currentSentence || "ابدأ بالضغط على الحروف...";
+        }
+
+        function updateProgress() {
+            const progress = (currentSentence.length / correctSentence.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function checkSentence() {
+            const message = document.getElementById('message');
+
+            // في وضع الكتابة، نأخذ النص من حقل الإدخال
+            if (currentMode === 'type') {
+                currentSentence = document.getElementById('typingInput').value;
+            }
+
+            if (currentSentence === correctSentence) {
+                showMessage("🎉 ممتاز! لقد نجحت في تجميع الجملة بشكل صحيح!", "success");
+                createConfetti();
+                // الانتقال لصفحة النجاح بعد 3 ثوان
+                setTimeout(() => {
+                    document.getElementById('successPage').style.display = 'flex';
+                }, 3000);
+            } else {
+                showMessage("❌ الجملة غير صحيحة. حاول مرة أخرى!", "error");
+            }
+        }
+
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+        }
+
+        function hideMessage() {
+            const message = document.getElementById('message');
+            message.style.display = 'none';
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f39c12', '#e74c3c'][Math.floor(Math.random() * 5)];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 100);
+            }
+        }
+
+        // تشغيل اللعبة عند تحميل الصفحة
+        window.onload = initGame;
+    </script>
+</body>
+</html>
